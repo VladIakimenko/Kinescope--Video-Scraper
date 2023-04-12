@@ -51,7 +51,8 @@ def scrape(scraper, duration, step):
 
     detector = threading.Thread(target=detect_requests, args=(scraper, detector_flag, result))
     detector.start()
-
+    
+    print()
     while (datetime.datetime.now() - start_time).total_seconds() < duration:
         remaining_time = round(duration - (datetime.datetime.now() - start_time).total_seconds())
         if remaining_time > 0:
@@ -74,10 +75,22 @@ def download(urls, links_log='links_log'):
     files = []
     audio_counter = 0
     video_counter = 0
+    resolutions = {}
+
     for url in urls:
+        if 'audio' not in url:
+            res = url.partition('?')[0].rpartition('/')[-1].rstrip('mp4')
+            resolutions[res] = resolutions.get(res, 0) + 1
+    print(f'Following chunks resolutions detected: {resolutions}')
+    target_resolution = max(resolutions, key=lambda x: resolutions.get(x))
+    print(f'Target resolution: {target_resolution}')
+
+    for url in urls:
+        if 'audio' not in url and target_resolution not in url:
+            continue
         file_type = ('video', 'audio')['audio' in url]
         i = (video_counter, audio_counter)[file_type == 'audio']
-        print('\nReceiving content...')
+        print(f'\nReceiving content from {url}...')
         response = requests.get(url)
         print('Creating file...')
         file = f'{file_type}_{i}.mp4'

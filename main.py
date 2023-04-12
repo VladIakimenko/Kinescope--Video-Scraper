@@ -41,7 +41,7 @@ def authorize(scraper, password):
     submit_button.click()
     print('Clicked.')
 
-    print('\nClicking the authorize button...')
+    print('\nClicking the "authorize" button...')
     button = WebDriverWait(scraper.driver, 20).until(EC.presence_of_element_located(
         (By.CSS_SELECTOR, 'a.src-LMS-components'
                           '-Errors-components-No'
