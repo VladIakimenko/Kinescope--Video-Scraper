@@ -4,18 +4,22 @@ import threading
 import time
 import os
 import json
+import curses
 
 import requests
 from selenium.webdriver.common.keys import Keys
 
-from .undet_chrome import UnDetChrome
 from .file_joiner import join_files
-
 
 FFMPEG_CMD = 'kinescraper/merge.txt'
 
 
 def scrape(scraper, duration, step):
+    stdscr = curses.initscr()
+    curses.cbreak()
+    stdscr.keypad(True)
+    curses.halfdelay(1 * 10)
+
     scraper.driver.switch_to.active_element.send_keys(Keys.SPACE)
     start_time = datetime.datetime.now()
     result = []
@@ -27,7 +31,8 @@ def scrape(scraper, duration, step):
                 scraper.driver.switch_to.active_element.send_keys(Keys.ARROW_RIGHT)
 
     def detect_requests(scraper, flag, result):
-        print(f'Detecting requests from kinescope... ({duration} seconds)\n')
+        print(f'Detecting requests from kinescope... ({duration} seconds)\n'
+              f'Press "q" to terminate manually\n')
         def process_browser_log_entry(entry):
             response = json.loads(entry['message'])['message']
             return response
@@ -53,10 +58,19 @@ def scrape(scraper, duration, step):
     detector.start()
     
     print()
+    stdscr.addstr(f'Press any key if finished earlier!\n')
     while (datetime.datetime.now() - start_time).total_seconds() < duration:
         remaining_time = round(duration - (datetime.datetime.now() - start_time).total_seconds())
         if remaining_time > 0:
-            print(f'\r{remaining_time} seconds remain   ', end='')
+            # print(f'\r{remaining_time} seconds remain   ', end='')
+            stdscr.addstr(f'\r{remaining_time} seconds remain   ')
+
+        c = stdscr.getch()
+        if c != curses.ERR:
+            print('\nKeyboard interrupt!')
+            timer_flag.set()
+            detector_flag.set()
+            break
     else:
         print("\rTime's up!" + ' ' * 30)
         timer_flag.set()
@@ -64,6 +78,10 @@ def scrape(scraper, duration, step):
 
     print(f'\n{len(result)} unique requests detected.')
     scraper.driver.minimize_window()
+    curses.nocbreak()
+    stdscr.keypad(False)
+    curses.echo()
+    curses.endwin()
     return result
 
 
@@ -90,7 +108,7 @@ def download(urls, links_log='links_log'):
             continue
         file_type = ('video', 'audio')['audio' in url]
         i = (video_counter, audio_counter)[file_type == 'audio']
-        print(f'\nReceiving content from {url}...')
+        print(f'\nReceiving content from {url}')
         response = requests.get(url)
         print('Creating file...')
         file = f'{file_type}_{i}.mp4'

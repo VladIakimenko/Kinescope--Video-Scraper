@@ -78,15 +78,6 @@ def authorize(scraper, password):
     scraper.get(link)
     print('Done.')
 
-#    print('\nStarting video playback...')
-#    time.sleep(5)
-#    iframe = scraper.driver.find_element(By.XPATH,
-#                                          '//iframe')
-#    scraper.driver.switch_to.frame(iframe)
-#    scraper.driver.switch_to.active_element.send_keys(Keys.SPACE)
-#    time.sleep(3)
-#    print('Playing.')
-
     print()
 
 
@@ -98,11 +89,9 @@ if __name__ == '__main__':
     parser.get(URL)
     authorize(parser, pass_)
 
-    print('.' * 50)
+
     links = scrape(parser, duration=DURATION, step=STEP)
 
-    print('.' * 50)
     file_list = download(links, links_log=LINKS_LOG)
 
-    print('.' * 50)
     merge_files(sorted(file_list), output_file=OUTPUT, ffmpeg_log=FFMPEG_LOG)
