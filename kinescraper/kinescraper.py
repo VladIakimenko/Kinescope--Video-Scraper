@@ -67,7 +67,6 @@ def scrape(scraper, duration, step):
 
         c = stdscr.getch()
         if c != curses.ERR:
-            print('\nKeyboard interrupt!')
             timer_flag.set()
             detector_flag.set()
             break
@@ -76,7 +75,6 @@ def scrape(scraper, duration, step):
         timer_flag.set()
         detector_flag.set()
 
-    print(f'\n{len(result)} unique requests detected.')
     scraper.driver.minimize_window()
     curses.nocbreak()
     stdscr.keypad(False)
@@ -86,6 +84,8 @@ def scrape(scraper, duration, step):
 
 
 def download(urls, links_log='links_log'):
+    print(f'\n{len(urls)} unique requests detected.')
+    
     with open(links_log, 'wt') as f:
         for url in urls:
             f.write(url + '\n')
