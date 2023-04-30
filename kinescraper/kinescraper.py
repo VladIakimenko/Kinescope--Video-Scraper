@@ -57,8 +57,8 @@ def scrape(scraper, duration, step):
     detector = threading.Thread(target=detect_requests, args=(scraper, detector_flag, result))
     detector.start()
     
-    print()
-    stdscr.addstr(f'Press any key if finished earlier!\n')
+    print('')
+    stdscr.addstr(f'\nPress any key, if finished earlier!\n')
     while (datetime.datetime.now() - start_time).total_seconds() < duration:
         remaining_time = round(duration - (datetime.datetime.now() - start_time).total_seconds())
         if remaining_time > 0:
