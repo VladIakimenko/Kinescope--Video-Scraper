@@ -58,7 +58,7 @@ def scrape(scraper, duration, step):
     detector.start()
     
     print('')
-    stdscr.addstr(f'\nPress any key, if finished earlier!\n')
+    stdscr.addstr(f'\n\nPress any key, if finished earlier!\n')
     while (datetime.datetime.now() - start_time).total_seconds() < duration:
         remaining_time = round(duration - (datetime.datetime.now() - start_time).total_seconds())
         if remaining_time > 0:
@@ -100,7 +100,26 @@ def download(urls, links_log='links_log'):
             res = url.partition('?')[0].rpartition('/')[-1].rstrip('mp4')
             resolutions[res] = resolutions.get(res, 0) + 1
     print(f'Following chunks resolutions detected: {resolutions}')
-    target_resolution = max(resolutions, key=lambda x: resolutions.get(x))
+    
+    def choose_resolution(resolutions):
+        """
+        Accepts a dictionary {resolution(str): count(int), ...}
+        Checks if there any repeated values in the dictionary (i.e. there equal amounts of chunks of different resolutions)
+        if there are:
+            takes the highest resolution (takes the digits away and compares)
+        else:
+            takes the resolution with the max(count)
+        return: resolution: str
+        """
+        if tuple(set(resolutions.values())) != resolutions.values():
+            choose_from = {res: count for res, count in resolutions.items() if count == max(resolutions.values())}
+            max_digits = max([int(''.join([d for d in res if d.isdigit()])) for res in choose_from])
+            targ_res = [res for res in resolutions if str(max_digits) in res][0]
+        else:
+            targ_res = max(resolutions, key=lambda x: resolutions.get(x))
+        return targ_res
+    
+    target_resolution = choose_resolution(resolutions)
     print(f'Target resolution: {target_resolution}')
 
     for url in urls:
@@ -152,15 +171,11 @@ def merge_files(input_files, output_file='output.mp4', ffmpeg_log='ffmpeg_log.tx
         else:
             print('\nCan not merge files!')
 
-    while True:
-        reply = input('Kill temps? ("y" or "n")\t').lower().strip()
-        if reply == 'y':
-            for file in (input_files + ['audio.mp4', 'video.mp4']):
-                if os.path.exists(file):
-                    os.remove(file)
-            print('\nTemporary files removed.')
-            break
-        if reply == 'n':
-            break
+
+        for file in (input_files + ['audio.mp4', 'video.mp4']):
+            if os.path.exists(file):
+                os.remove(file)
+        print('\nTemporary files removed.')
+
             
 

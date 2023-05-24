@@ -35,6 +35,8 @@ class UnDetChrome:
         options.add_argument("--ignore-certificate-errors")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-popup-blocking")
+        
+#       options.binary_location = '/usr/bin/google-chrome-stable'
 
         self.driver = undetected_chromedriver.Chrome(desired_capabilities=caps, options=options)
         self.driver.start_client()
