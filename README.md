@@ -57,3 +57,7 @@ All Netology materials are right protected, and it's use beyond personal educati
 supposedly, most of the videos from Kinescope.  
 This program was designed for educational purposes only and must never be used in illegal acts. Ensure to study the legal
 aspects of the actions you plan to undertake with and its potential consequences.
+
+# Updates notes:
+`09/07/2023` Now the script ensures that the same chunk would not be downloaded twice, by saving each one to a set and checking if it isn't there before downloading.
+

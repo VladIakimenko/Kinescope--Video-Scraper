@@ -5,6 +5,7 @@ import time
 import os
 import json
 import curses
+import re
 
 import requests
 from selenium.webdriver.common.keys import Keys
@@ -122,9 +123,25 @@ def download(urls, links_log='links_log'):
     target_resolution = choose_resolution(resolutions)
     print(f'Target resolution: {target_resolution}')
 
+
+
+    pattern = r"(?<=assets/).+?(?:/audio_\d+\.mp4|/\d+/\d+/(?:\d+p)\.mp4)"
+    downloaded_chunks = set()
+    
     for url in urls:
         if 'audio' not in url and target_resolution not in url:
             continue
+            
+        identifier = None
+        match = re.search(pattern, url)
+        if match:
+            identifier = match.group(0)
+
+        if identifier in downloaded_chunks:
+            continue
+
+        downloaded_chunks.add(identifier)
+        
         file_type = ('video', 'audio')['audio' in url]
         i = (video_counter, audio_counter)[file_type == 'audio']
         print(f'\nReceiving content from {url}')
