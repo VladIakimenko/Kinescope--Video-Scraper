@@ -4,7 +4,6 @@ import threading
 import time
 import os
 import json
-import curses
 import re
 
 import requests
@@ -16,11 +15,6 @@ FFMPEG_CMD = 'kinescraper/merge.txt'
 
 
 def scrape(scraper, duration, step):
-    stdscr = curses.initscr()
-    curses.cbreak()
-    stdscr.keypad(True)
-    curses.halfdelay(1 * 10)
-
     scraper.driver.switch_to.active_element.send_keys(Keys.SPACE)
     start_time = datetime.datetime.now()
     result = []
@@ -32,8 +26,8 @@ def scrape(scraper, duration, step):
                 scraper.driver.switch_to.active_element.send_keys(Keys.ARROW_RIGHT)
 
     def detect_requests(scraper, flag, result):
-        print(f'Detecting requests from kinescope... ({duration} seconds)\n'
-              f'Press "q" to terminate manually\n')
+        print(f'Detecting requests from kinescope... ({duration} seconds)\n')
+
         def process_browser_log_entry(entry):
             response = json.loads(entry['message'])['message']
             return response
@@ -52,41 +46,31 @@ def scrape(scraper, duration, step):
     timer_flag = threading.Event()
     detector_flag = threading.Event()
 
-    timer = threading.Thread(target=wind_forward, args=(scraper, timer_flag))
-    timer.start()
+    winder = threading.Thread(target=wind_forward, args=(scraper, timer_flag))
+    winder.start()
 
     detector = threading.Thread(target=detect_requests, args=(scraper, detector_flag, result))
     detector.start()
-    
-    print('')
-    stdscr.addstr(f'\n\nPress any key, if finished earlier!\n')
-    while (datetime.datetime.now() - start_time).total_seconds() < duration:
-        remaining_time = round(duration - (datetime.datetime.now() - start_time).total_seconds())
-        if remaining_time > 0:
-            # print(f'\r{remaining_time} seconds remain   ', end='')
-            stdscr.addstr(f'\r{remaining_time} seconds remain   ')
 
-        c = stdscr.getch()
-        if c != curses.ERR:
-            timer_flag.set()
-            detector_flag.set()
-            break
-    else:
-        print("\rTime's up!" + ' ' * 30)
+    def terminate_threads():
         timer_flag.set()
         detector_flag.set()
 
-    scraper.driver.minimize_window()
-    curses.nocbreak()
-    stdscr.keypad(False)
-    curses.echo()
-    curses.endwin()
+    timer = threading.Timer(duration, terminate_threads)
+    timer.start()
+    print()
+    input(f'The app will be winding the video forward, while recording requests for the video chunks.\n'
+          f'Press enter, if the video is winded up to its end before the timeout hits.\n')
+    timer.cancel()
+    terminate_threads()
+
+    # scraper.driver.minimize_window()		# falls in i3!
     return result
 
 
 def download(urls, links_log='links_log'):
     print(f'\n{len(urls)} unique requests detected.')
-    
+
     with open(links_log, 'wt') as f:
         for url in urls:
             f.write(url + '\n')
@@ -101,7 +85,7 @@ def download(urls, links_log='links_log'):
             res = url.partition('?')[0].rpartition('/')[-1].rstrip('mp4')
             resolutions[res] = resolutions.get(res, 0) + 1
     print(f'Following chunks resolutions detected: {resolutions}')
-    
+
     def choose_resolution(resolutions):
         """
         Accepts a dictionary {resolution(str): count(int), ...}
@@ -119,7 +103,7 @@ def download(urls, links_log='links_log'):
         else:
             targ_res = max(resolutions, key=lambda x: resolutions.get(x))
         return targ_res
-    
+
     target_resolution = choose_resolution(resolutions)
     print(f'Target resolution: {target_resolution}')
 
@@ -127,11 +111,11 @@ def download(urls, links_log='links_log'):
 
     pattern = r"(?<=assets/).+?(?:/audio_\d+\.mp4|/\d+/\d+/(?:\d+p)\.mp4)"
     downloaded_chunks = set()
-    
+
     for url in urls:
         if 'audio' not in url and target_resolution not in url:
             continue
-            
+
         identifier = None
         match = re.search(pattern, url)
         if match:
@@ -141,7 +125,7 @@ def download(urls, links_log='links_log'):
             continue
 
         downloaded_chunks.add(identifier)
-        
+
         file_type = ('video', 'audio')['audio' in url]
         i = (video_counter, audio_counter)[file_type == 'audio']
         print(f'\nReceiving content from {url}')
@@ -164,7 +148,7 @@ def download(urls, links_log='links_log'):
 def merge_files(input_files, output_file='output.mp4', ffmpeg_log='ffmpeg_log.txt'):
     audio_files = sorted([file for file in input_files if 'audio' in file])
     print(f'\nTemporary audio files downloaded: {", ".join(audio_files)}')
-    
+
     video_files = sorted([file for file in input_files if 'video' in file])
     print(f'Temporary video files downloaded: {", ".join(video_files)}')
 
@@ -188,11 +172,9 @@ def merge_files(input_files, output_file='output.mp4', ffmpeg_log='ffmpeg_log.tx
         else:
             print('\nCan not merge files!')
 
-
         for file in (input_files + ['audio.mp4', 'video.mp4']):
             if os.path.exists(file):
                 os.remove(file)
         print('\nTemporary files removed.')
 
-            
 

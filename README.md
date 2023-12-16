@@ -59,6 +59,6 @@ This program was designed for educational purposes only and must never be used i
 legal aspects of the actions you plan to undertake with and its potential consequences.
 
 # Updates notes:
-`09/07/2023` Now the script ensures that the same chunk would not be downloaded twice, by saving each one to a set, and checking if it isn't there before downloading.
-
+`09/07/2023` Now the script ensures that the same chunk would not be downloaded twice, by saving each one to a set, and checking if it isn't there before downloading.  
+`16/12/2023` Switched the undetected_chromedriver to pure selenium, made use of webdriver_manager for chromedriver init, revised the timer theread and request detection keyboard interruption.  
 

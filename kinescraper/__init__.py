@@ -8,8 +8,8 @@ undetected-chromedriver 3.4.6
 
 __version__ = '1.0'
 
-from .undet_chrome import UnDetChrome
+from .selenium import Scraper
 from .kinescraper import scrape, download, merge_files
 
-__all__ = ['UnDetChrome', 'scrape', 'download', 'merge_files']
+__all__ = ['Scraper', 'scrape', 'download', 'merge_files']
 

@@ -1,13 +1,9 @@
 import os
-import sys
 import time
-import json
 
-import requests
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 
 from config import *
 from kinescraper import *
@@ -36,13 +32,13 @@ def create_paths():
 
 def authorize(scraper, password):
     print('\nClicking the "accept cookies" button...')
-    submit_button = WebDriverWait(scraper.driver, 20).until(EC.element_to_be_clickable(
+    submit_button = WebDriverWait(scraper.driver, 30).until(EC.element_to_be_clickable(
         (By.XPATH, "//button[@type='submit']")))
     submit_button.click()
     print('Clicked.')
 
     print('\nClicking the "authorize" button...')
-    button = WebDriverWait(scraper.driver, 20).until(EC.presence_of_element_located(
+    button = WebDriverWait(scraper.driver, 30).until(EC.presence_of_element_located(
         (By.CSS_SELECTOR, 'a.src-LMS-components'
                           '-Errors-components-No'
                           'Access--goback--dxBzz'
@@ -51,7 +47,7 @@ def authorize(scraper, password):
     print('Clicked.')
 
     print('\nEntering e-mail...')
-    email_input = WebDriverWait(scraper.driver, 20).until(EC.presence_of_element_located(
+    email_input = WebDriverWait(scraper.driver, 30).until(EC.presence_of_element_located(
         (By.XPATH, '//input[@name="email"]')))
     email_input.send_keys(EMAIL)
     print('Done.')
@@ -65,7 +61,7 @@ def authorize(scraper, password):
     print('Done.')
 
     print('\nClicking the "submit" button...')
-    submit_button = WebDriverWait(scraper.driver, 20).until(EC.element_to_be_clickable(
+    submit_button = WebDriverWait(scraper.driver, 30).until(EC.element_to_be_clickable(
         (By.XPATH, "//button[@type='submit']")))
     submit_button.click()
     print('Clicked.')
@@ -85,13 +81,10 @@ if __name__ == '__main__':
     pass_ = read_pass()
     create_paths()
 
-    parser = UnDetChrome()
+    parser = Scraper()
     parser.get(URL)
     authorize(parser, pass_)
 
-
     links = scrape(parser, duration=DURATION, step=STEP)
-
     file_list = download(links, links_log=LINKS_LOG)
-
     merge_files(sorted(file_list), output_file=OUTPUT, ffmpeg_log=FFMPEG_LOG)
