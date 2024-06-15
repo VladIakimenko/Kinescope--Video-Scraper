@@ -1,5 +1,5 @@
 URL = ''
-EMAIL = ''
+EMAIL = 'test@example.ru'
 PASS_PATH = 'data/password.srt'
 OUTPUT = 'output.mp4'
 LINKS_LOG = 'data/logs/links_log.txt'

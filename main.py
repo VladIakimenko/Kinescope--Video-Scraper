@@ -53,10 +53,8 @@ def authorize(scraper, password):
     print('Done.')
 
     print('\nEntering password...')
-    pass_input = scraper.driver.find_element(By.XPATH, '//input[@class="node_modules-'
-                                                        '@netology-shared-src-r'
-                                                        'eallyShared-authorization-moda'
-                                                        'ls-SignIn--input--LsO8Q"]')
+    pass_input = WebDriverWait(scraper.driver, 30).until(EC.presence_of_element_located(
+        (By.XPATH, '//input[@name="password"]')))
     pass_input.send_keys(password)
     print('Done.')
 

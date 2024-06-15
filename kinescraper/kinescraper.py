@@ -166,6 +166,7 @@ def merge_files(input_files, output_file='output.mp4', ffmpeg_log='ffmpeg_log.tx
             with open(ffmpeg_log, 'wt', encoding='UTF-8') as log:
                 with open (FFMPEG_CMD, 'rt', encoding='UTF-8') as f:
                     ffmpeg_cmd = f.read()
+                    ffmpeg_cmd = ffmpeg_cmd.replace("<output_name>", output_file)
                 subprocess.call(ffmpeg_cmd, shell=True, stderr=log)
             if os.path.exists(output_file):
                 print(f'\n{output_file} has been created! Good job, Gansta!')
